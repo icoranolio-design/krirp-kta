@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KRIRP — Database System</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --orange: #F97316;
+  --orange-dim: #C2600E;
+  --orange-faint: rgba(249,115,22,0.08);
+  --orange-border: rgba(249,115,22,0.25);
+  --orange-border-hover: rgba(249,115,22,0.6);
+  --bg: #0A0B0D;
+  --surface: #111318;
+  --surface2: #16181F;
+  --txt: #E2E4EB;
+  --txt-muted: #636678;
+  --txt-dim: #3E404E;
+  --green: #22C55E;
+  --red: #EF4444;
+  --transition: 0.2s ease;
+}
+
+html { font-family: 'Inter', sans-serif; }
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── LOADING ── */
+#ls {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 20px;
+  transition: opacity 0.5s ease;
+}
+#ls.gone { opacity: 0; pointer-events: none; }
+.ls-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--orange);
+  letter-spacing: 6px;
+}
+.ls-bar {
+  width: 200px; height: 2px;
+  background: var(--surface2);
+  border-radius: 99px; overflow: hidden;
+}
+.ls-fill {
+  height: 100%;
+  background: var(--orange);
+  border-radius: 99px;
+  width: 0;
+  animation: fill 1.8s ease forwards;
+}
+@keyframes fill { to { width: 100%; } }
+.ls-sub {
+  font-size: 0.65rem; letter-spacing: 4px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+}
+
+/* ── PAGE ── */
+.page {
+  width: 100%; max-width: 680px;
+  padding: 32px 20px 80px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sys-status {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.65rem; letter-spacing: 3px;
+  color: var(--green); font-family: 'Orbitron', sans-serif;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.clock {
+  font-size: 0.7rem; letter-spacing: 3px;
+  color: var(--txt-muted); font-family: 'Orbitron', sans-serif;
+}
+
+/* ── HEADER ── */
+.header { text-align: center; padding: 12px 0 4px; }
+
+.emblem {
+  width: 64px; height: 64px; margin: 0 auto 16px;
+}
+.emblem svg { width: 100%; height: 100%; }
+
+.h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  font-weight: 900;
+  color: var(--orange);
+  letter-spacing: 6px;
+  line-height: 1.2;
+}
+.h2 {
+  font-size: 0.65rem; letter-spacing: 5px;
+  color: var(--txt-dim); margin-top: 6px;
+  font-family: 'Orbitron', sans-serif;
+}
+.h-rule {
+  margin-top: 20px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange-border), transparent);
+}
+
+/* ── CARD (shared) ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--orange-border);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+}
+
+/* ── SEARCH ── */
+.label {
+  font-size: 0.6rem; letter-spacing: 4px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+  margin-bottom: 12px;
+}
+.input-row { display: flex; gap: 10px; }
+.nrp {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--orange-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem; font-weight: 500;
+  color: var(--orange);
+  letter-spacing: 3px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  caret-color: var(--orange);
+  min-width: 0;
+}
+.nrp::placeholder { color: var(--txt-dim); letter-spacing: 2px; font-size: 0.75rem; }
+.nrp:focus {
+  border-color: var(--orange-border-hover);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+}
+.btn {
+  background: var(--orange);
+  border: none; border-radius: 8px;
+  padding: 12px 22px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 2px; color: #fff;
+  cursor: pointer; white-space: nowrap;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.btn:hover { background: #EA6C0B; box-shadow: 0 0 20px rgba(249,115,22,0.3); }
+.btn:active { transform: scale(0.97); }
+
+.err-msg {
+  font-size: 0.65rem; color: var(--red);
+  letter-spacing: 2px; font-family: 'Orbitron', sans-serif;
+  margin-top: 10px; display: none;
+}
+.err-msg.show { display: block; }
+
+/* ── HISTORY ── */
+.hist-wrap { display: none; }
+.hist-label {
+  font-size: 0.6rem; letter-spacing: 4px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+  margin-bottom: 10px;
+}
+.hist-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  padding: 4px 12px; border-radius: 99px;
+  background: var(--surface);
+  border: 1px solid var(--orange-border);
+  font-size: 0.7rem; font-family: 'Orbitron', sans-serif;
+  color: var(--txt-muted); letter-spacing: 2px;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+.pill:hover { border-color: var(--orange-border-hover); color: var(--orange); }
+
+/* ── STATES ── */
+.state { display: none; }
+.state.show { display: block; }
+
+/* Loading state */
+#st-loading {
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px; padding: 40px 0;
+}
+#st-loading.show { display: flex; }
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--orange-border);
+  border-top-color: var(--orange);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin-label {
+  font-size: 0.62rem; letter-spacing: 4px;
+  color: var(--txt-muted); font-family: 'Orbitron', sans-serif;
+}
+
+/* Error state */
+#st-error {
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; padding: 40px 0;
+  text-align: center;
+}
+#st-error.show {
+  display: flex;
+  animation: fadeUp 0.3s ease;
+}
+.err-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--red); font-size: 1.3rem;
+}
+.err-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--red); letter-spacing: 3px;
+}
+.err-sub {
+  font-size: 0.65rem; color: var(--txt-dim);
+  letter-spacing: 2px; font-family: 'Orbitron', sans-serif;
+}
+
+/* ── RESULT ── */
+#st-result { animation: fadeUp 0.35s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.kta {
+  background: var(--surface);
+  border: 1px solid var(--orange-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* KTA header strip */
+.kta-top {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--orange-border);
+  padding: 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.avatar-wrap {
+  position: relative; flex-shrink: 0;
+  width: 58px; height: 58px;
+}
+.avatar {
+  width: 58px; height: 58px; border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--orange-border-hover);
+  display: block;
+}
+.avatar-ring {
+  position: absolute; inset: -3px; border-radius: 50%;
+  border: 1px solid var(--orange-border);
+}
+.kta-meta { flex: 1; min-width: 0; }
+.kta-badge-txt {
+  font-size: 0.58rem; letter-spacing: 4px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+  margin-bottom: 4px;
+}
+.kta-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--txt); letter-spacing: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kta-rank {
+  font-size: 0.75rem; color: var(--orange);
+  letter-spacing: 2px; font-family: 'Orbitron', sans-serif;
+  margin-top: 3px;
+}
+.status-badge {
+  padding: 4px 12px; border-radius: 99px;
+  font-size: 0.6rem; font-family: 'Orbitron', sans-serif;
+  letter-spacing: 2px; flex-shrink: 0;
+}
+.status-badge.aktif {
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: var(--green);
+}
+.status-badge.nonaktif {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--red);
+}
+
+/* KTA grid fields */
+.kta-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--orange-border);
+  border-bottom: 1px solid var(--orange-border);
+}
+.kta-field {
+  background: var(--surface);
+  padding: 14px 18px;
+}
+.field-label {
+  font-size: 0.55rem; letter-spacing: 3px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+  margin-bottom: 5px;
+}
+.field-val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--txt); letter-spacing: 1px;
+}
+
+/* KTA foto */
+.kta-foto-area { padding: 16px 20px; }
+.foto-label {
+  font-size: 0.55rem; letter-spacing: 4px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+  margin-bottom: 10px;
+}
+.kta-img {
+  width: 100%; border-radius: 8px;
+  border: 1px solid var(--orange-border);
+  display: block; max-height: 200px; object-fit: cover;
+}
+.kta-img-placeholder {
+  height: 120px; border-radius: 8px;
+  border: 1px solid var(--orange-border);
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; letter-spacing: 3px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+}
+
+/* KTA actions */
+.kta-actions {
+  display: flex; gap: 8px;
+  padding: 0 20px 20px;
+  flex-wrap: wrap;
+}
+.btn-sm {
+  flex: 1; min-width: 110px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--orange-border);
+  background: transparent;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 2px; color: var(--txt-muted);
+  cursor: pointer; text-align: center;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.btn-sm:hover {
+  border-color: var(--orange-border-hover);
+  color: var(--orange);
+  background: var(--orange-faint);
+}
+.btn-sm.primary {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* ── TOAST ── */
+.toast-shelf {
+  position: fixed; bottom: 24px; right: 20px;
+  z-index: 100; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 10px 18px;
+  background: var(--surface2);
+  border: 1px solid var(--orange-border-hover);
+  border-radius: 8px;
+  font-size: 0.65rem; letter-spacing: 2px;
+  color: var(--txt); font-family: 'Orbitron', sans-serif;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  animation: toastIn 0.25s ease;
+  pointer-events: auto;
+}
+.toast.ok  { border-color: rgba(34,197,94,0.5); color: var(--green); }
+.toast.bad { border-color: rgba(239,68,68,0.5); color: var(--red); }
+@keyframes toastIn  { from { opacity:0; transform: translateY(8px); } }
+@keyframes toastOut { to   { opacity:0; transform: translateY(8px); } }
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: auto;
+  padding: 28px 0 8px;
+  text-align: center;
+  font-size: 0.58rem; letter-spacing: 3px;
+  color: var(--txt-dim); font-family: 'Orbitron', sans-serif;
+  border-top: 1px solid var(--orange-border);
+  line-height: 2;
+}
+
+@media (max-width: 480px) {
+  .kta-fields { grid-template-columns: 1fr; }
+  .kta-top { flex-wrap: wrap; }
+  .input-row { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="ls">
+  <div class="ls-title">KRIRP</div>
+  <div class="ls-bar"><div class="ls-fill"></div></div>
+  <div class="ls-sub">INITIALIZING...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-shelf" id="toasts"></div>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="sys-status"><div class="dot"></div>ONLINE</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="emblem">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(249,115,22,0.5)" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="36" fill="none" stroke="rgba(249,115,22,0.2)" stroke-width="1"/>
+        <!-- tick marks -->
+        <line x1="50" y1="4"  x2="50" y2="12" stroke="#F97316" stroke-width="2"/>
+        <line x1="50" y1="88" x2="50" y2="96" stroke="#F97316" stroke-width="2"/>
+        <line x1="4"  y1="50" x2="12" y2="50" stroke="#F97316" stroke-width="2"/>
+        <line x1="88" y1="50" x2="96" y2="50" stroke="#F97316" stroke-width="2"/>
+        <line x1="19" y1="19" x2="25" y2="25" stroke="rgba(249,115,22,0.5)" stroke-width="1.5"/>
+        <line x1="75" y1="19" x2="81" y2="25" stroke="rgba(249,115,22,0.5)" stroke-width="1.5"/>
+        <line x1="19" y1="81" x2="25" y2="75" stroke="rgba(249,115,22,0.5)" stroke-width="1.5"/>
+        <line x1="75" y1="81" x2="81" y2="75" stroke="rgba(249,115,22,0.5)" stroke-width="1.5"/>
+        <!-- shield -->
+        <path d="M50 24 L63 31 L63 50 Q63 61 50 68 Q37 61 37 50 L37 31 Z"
+              fill="rgba(249,115,22,0.12)" stroke="#F97316" stroke-width="1.2"/>
+        <text x="50" y="54" text-anchor="middle"
+              font-family="Orbitron,sans-serif" font-size="15" font-weight="700"
+              fill="#F97316">P</text>
+      </svg>
+    </div>
+    <h1 class="h1">KRIRP DATABASE SYSTEM</h1>
+    <p class="h2">POLICE MEMBER IDENTIFICATION</p>
+    <div class="h-rule"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="hist-wrap" id="hist-wrap">
+    <div class="hist-label">RIWAYAT</div>
+    <div class="hist-pills" id="hist-pills"></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="card">
+    <div class="label">NOMOR REGISTRASI POKOK</div>
+    <div class="input-row">
+      <input class="nrp" id="nrp-in" type="text" inputmode="numeric"
+             placeholder="Masukkan NRP..." maxlength="20" autocomplete="off"/>
+      <button class="btn" id="btn-cek">CEK KTA</button>
+    </div>
+    <div class="err-msg" id="val-err">⚠ NRP HANYA BOLEH BERISI ANGKA</div>
+  </div>
+
+  <!-- SPINNER -->
+  <div class="card" id="st-loading">
+    <div class="spinner"></div>
+    <div class="spin-label">MEMUAT DATA...</div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="card" id="st-error">
+    <div class="err-icon">✕</div>
+    <div class="err-title">DATA TIDAK DITEMUKAN</div>
+    <div class="err-sub" id="err-nrp-txt"></div>
+    <div class="err-sub">PERIKSA KEMBALI NRP</div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="st-result" class="state">
+    <div class="kta" id="kta-card">
+
+      <div class="kta-top">
+        <div class="avatar-wrap">
+          <img class="avatar" id="r-profile" src="" alt="foto"
+               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 58 58%22><rect width=%2258%22 height=%2258%22 rx=%2229%22 fill=%22%2316181F%22/><text x=%2229%22 y=%2237%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22%23F97316%22>👤</text></svg>'"/>
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="kta-meta">
+          <div class="kta-badge-txt">ANGGOTA POLRI — KRIRP</div>
+          <div class="kta-name" id="r-nama">—</div>
+          <div class="kta-rank" id="r-pangkat">—</div>
+        </div>
+        <div class="status-badge" id="r-status-badge">—</div>
+      </div>
+
+      <div class="kta-fields">
+        <div class="kta-field">
+          <div class="field-label">NRP</div>
+          <div class="field-val" id="r-nrp">—</div>
+        </div>
+        <div class="kta-field">
+          <div class="field-label">DIVISI</div>
+          <div class="field-val" id="r-divisi">—</div>
+        </div>
+        <div class="kta-field">
+          <div class="field-label">STATUS</div>
+          <div class="field-val" id="r-status">—</div>
+        </div>
+        <div class="kta-field">
+          <div class="field-label">MASA BERLAKU</div>
+          <div class="field-val" id="r-masa">—</div>
+        </div>
+      </div>
+
+      <div class="kta-foto-area">
+        <div class="foto-label">FOTO KTA</div>
+        <div id="r-foto-container"></div>
+      </div>
+
+      <div class="kta-actions">
+        <button class="btn-sm primary" onclick="downloadKTA()">↓ DOWNLOAD</button>
+        <button class="btn-sm" onclick="copyData()">⎘ SALIN DATA</button>
+        <button class="btn-sm" onclick="resetView()">↺ CEK ULANG</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    KRIRP | Kepolisian Republik Negara Roleplay Indonesia<br>
+    <span style="color:var(--txt-dim);font-size:0.5rem">AUTHORIZED ACCESS ONLY</span>
+  </div>
+
+</div><!-- /page -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* ============================================================
+   DATABASE — edit di sini untuk tambah / ubah anggota
+   ============================================================ */
+const DB = [
+  {
+    nrp: "11001",
+    nama: "Lio Fernando",
+    pangkat: "BRIPDA",
+    divisi: "SABHARA",
+    status: "AKTIF",
+    masa: "2027",
+    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+LIO+FERNANDO",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=LF"
+  },
+  {
+    nrp: "11002",
+    nama: "Arya Wicaksono",
+    pangkat: "BRIPTU",
+    divisi: "RESKRIM",
+    status: "AKTIF",
+    masa: "2028",
+    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+ARYA+WICAKSONO",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=AW"
+  },
+  {
+    nrp: "22001",
+    nama: "Dian Pratiwi",
+    pangkat: "BRIGADIR",
+    divisi: "INTELIJEN",
+    status: "AKTIF",
+    masa: "2026",
+    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+DIAN+PRATIWI",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=DP"
+  },
+  {
+    nrp: "33001",
+    nama: "Rizky Mahendra",
+    pangkat: "AIPDA",
+    divisi: "LANTAS",
+    status: "NON-AKTIF",
+    masa: "2025",
+    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+RIZKY+MAHENDRA",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=RM"
+  },
+  {
+    nrp: "44001",
+    nama: "Sinta Permata",
+    pangkat: "IPDA",
+    divisi: "PROPAM",
+    status: "AKTIF",
+    masa: "2029",
+    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+SINTA+PERMATA",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=SP"
+  }
+];
+
+/* ── loading screen ── */
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('ls').classList.add('gone'), 1900);
+});
+
+/* ── clock ── */
+function tick() {
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    [d.getHours(), d.getMinutes(), d.getSeconds()]
+      .map(n => String(n).padStart(2,'0')).join(':');
+}
+tick(); setInterval(tick, 1000);
+
+/* ── toast ── */
+function toast(msg, type = '') {
+  const shelf = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  shelf.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastOut 0.25s ease forwards';
+    setTimeout(() => el.remove(), 260);
+  }, 2500);
+}
+
+/* ── history ── */
+let hist = JSON.parse(localStorage.getItem('krirp_h') || '[]');
+function saveHist(nrp) {
+  hist = [nrp, ...hist.filter(x => x !== nrp)].slice(0, 6);
+  localStorage.setItem('krirp_h', JSON.stringify(hist));
+  renderHist();
+}
+function renderHist() {
+  const wrap = document.getElementById('hist-wrap');
+  const pills = document.getElementById('hist-pills');
+  if (!hist.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  pills.innerHTML = '';
+  hist.forEach(n => {
+    const p = document.createElement('div');
+    p.className = 'pill'; p.textContent = n;
+    p.onclick = () => { document.getElementById('nrp-in').value = n; go(); };
+    pills.appendChild(p);
+  });
+}
+renderHist();
+
+/* ── state management ── */
+function hide(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('show');
+  if (id === 'st-loading') el.classList.remove('show');
+}
+function show(id) {
+  const el = document.getElementById(id);
+  el.classList.add('show');
+}
+function hideAll() {
+  ['st-loading','st-error','st-result'].forEach(hide);
+}
+
+/* ── main ── */
+let current = null;
+
+function go() {
+  const val = document.getElementById('nrp-in').value.trim();
+  const errEl = document.getElementById('val-err');
+
+  if (!val) { toast('Masukkan NRP terlebih dahulu', 'bad'); return; }
+  if (!/^\d+$/.test(val)) { errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+
+  hideAll();
+  show('st-loading');
+  saveHist(val);
+
+  setTimeout(() => {
+    const found = DB.find(d => d.nrp === val);
+    hide('st-loading');
+    found ? renderResult(found) : renderError(val);
+  }, 900);
+}
+
+function renderResult(d) {
+  current = d;
+  document.getElementById('r-nama').textContent    = d.nama;
+  document.getElementById('r-pangkat').textContent = d.pangkat;
+  document.getElementById('r-nrp').textContent     = d.nrp;
+  document.getElementById('r-divisi').textContent  = d.divisi;
+  document.getElementById('r-status').textContent  = d.status;
+  document.getElementById('r-masa').textContent    = d.masa + ' s/d';
+
+  const badge = document.getElementById('r-status-badge');
+  badge.textContent = d.status;
+  badge.className = 'status-badge ' + (d.status === 'AKTIF' ? 'aktif' : 'nonaktif');
+
+  document.getElementById('r-profile').src = d.profile || '';
+
+  const fc = document.getElementById('r-foto-container');
+  fc.innerHTML = d.foto
+    ? `<img class="kta-img" src="${d.foto}" alt="KTA" onerror="this.outerHTML='<div class=\\'kta-img-placeholder\\'>FOTO TIDAK TERSEDIA</div>'">`
+    : `<div class="kta-img-placeholder">FOTO TIDAK TERSEDIA</div>`;
+
+  show('st-result');
+  toast('Data ditemukan', 'ok');
+  setTimeout(() => document.getElementById('st-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+}
+
+function renderError(nrp) {
+  document.getElementById('err-nrp-txt').textContent = 'NRP: ' + nrp;
+  show('st-error');
+  toast('NRP tidak ditemukan', 'bad');
+}
+
+function resetView() {
+  hideAll();
+  document.getElementById('nrp-in').value = '';
+  current = null;
+  document.getElementById('nrp-in').focus();
+}
+
+/* ── download ── */
+function downloadKTA() {
+  if (!current) return;
+  toast('Menyiapkan file...');
+  html2canvas(document.getElementById('kta-card'), {
+    backgroundColor: '#111318', scale: 2, useCORS: true, logging: false
+  }).then(c => {
+    const a = document.createElement('a');
+    a.download = `KTA_${current.nrp}_${current.nama.replace(/ /g,'_')}.png`;
+    a.href = c.toDataURL('image/png');
+    a.click();
+    toast('Berhasil diunduh', 'ok');
+  }).catch(() => toast('Gagal mengunduh', 'bad'));
+}
+
+/* ── copy ── */
+function copyData() {
+  if (!current) return;
+  const txt =
+`NRP     : ${current.nrp}
+NAMA    : ${current.nama}
+PANGKAT : ${current.pangkat}
+DIVISI  : ${current.divisi}
+STATUS  : ${current.status}
+MASA    : ${current.masa}
+— KRIRP Database System`;
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('Data disalin', 'ok'))
+    .catch(() => toast('Gagal menyalin', 'bad'));
+}
+
+/* ── input ── */
+document.getElementById('nrp-in').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g, '');
+  document.getElementById('val-err').classList.remove('show');
+});
+document.getElementById('nrp-in').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+document.getElementById('btn-cek').addEventListener('click', go);
+</script>
+</body>
+</html>
