@@ -348,7 +348,9 @@ body {
 .kta-img {
   width: 100%; border-radius: 8px;
   border: 1px solid var(--orange-border);
-  display: block; max-height: 200px; object-fit: cover;
+  display: block;
+  object-fit: contain;
+  background: #000;
 }
 .kta-img-placeholder {
   height: 120px; border-radius: 8px;
@@ -573,6 +575,56 @@ body {
    ============================================================ */
 const DB = [
   {
+    nrp: "2026006",
+    nama: "Oogans1",
+    pangkat: "Brigadir Jenderal Polisi",
+    divisi: "Propam",
+    status: "AKTIF",
+    masa: "2027",
+    foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515018456725065808/Nama_Nrp_Phone_Address_20260612_222842_0000.png?ex=6a2ecbe3&is=6a2d7a63&hm=b4f87a9501d750a5f72a958434719eba7d425e7acc2569ae5ef7d50e36a1e47b",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=LF"
+  },
+  {
+    nrp: "2026034",
+    nama: "Raihanzzk",
+    pangkat: "Inspektur Jenderal Polisi",
+    divisi: "Brimob",
+    status: "AKTIF",
+    masa: "2027",
+    foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515486997085421598/Nama_Nrp_Phone_Address_20260614_053834_0000.png?ex=6a2f2ec0&is=6a2ddd40&hm=a185da5cc24dec0ca1a78beb40df25ac82480c0e8b24d83257e69198a6b70f20",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=AW"
+  },
+  {
+    nrp: "2026011",
+    nama: "Realgoos",
+    pangkat: "Komisaris Jenderal Polisi",
+    divisi: "Bareskrim",
+    status: "AKTIF",
+    masa: "2027",
+    foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515023641941905458/Nama_Nrp_Phone_Address_20260612_225904_0000.png?ex=6a2ed0b8&is=6a2d7f38&hm=c38086ddf46141695e50099af83e15e31279b0614c58e3e1a2c5938edb1ce591",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=DP"
+  },
+  {
+    nrp: "2026023",
+    nama: "K4rteell",
+    pangkat: "Bhayangkara Dua",
+    divisi: "Bareskrim",
+    status: "AKTIF",
+    masa: "2027",
+    foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515306686586552421/Nama_Nrp_Phone_Address_20260613_174612_0000.png?ex=6a2f2f93&is=6a2dde13&hm=a4d1c2ba2a52e29f4940058729038384bc89c923a92e1045eed406bc0210b3bc",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=RM"
+  },
+  {
+    nrp: "20260458",
+    nama: "Siapa_aja12341",
+    pangkat: "Komisaris Besar Polisi",
+    divisi: "Bareskrim",
+    status: "AKTIF",
+    masa: "2027",
+    foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515549031554613350/Nama_Nrp_Phone_Address_20260614_094626_0000.png?ex=6a2f6886&is=6a2e1706&hm=26dad0d972ceeecf6509a815a362befe0e6fa5a280ad8c1d4f477abc3a700c9b",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=SP"
+  },
+  {
     nrp: "20260344",
     nama: "Luvy_bizon",
     pangkat: "Bhayangkara Dua",
@@ -580,47 +632,17 @@ const DB = [
     status: "AKTIF",
     masa: "2027",
     foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515539077326176347/Nama_Nrp_Phone_Address_20260614_090841_0000.png?ex=6a2f5f41&is=6a2e0dc1&hm=43f209d13b0414b1ce4915276077e63f226226d5aabffeb5becfc95479c7939a",
-    profile: "https://cdn.discordapp.com/attachments/1515017096856211526/1515539077326176347/Nama_Nrp_Phone_Address_20260614_090841_0000.png?ex=6a2f5f41&is=6a2e0dc1&hm=43f209d13b0414b1ce4915276077e63f226226d5aabffeb5becfc95479c7939a"
-  },
-  {
-    nrp: "11002",
-    nama: "Arya Wicaksono",
-    pangkat: "BRIPTU",
-    divisi: "RESKRIM",
-    status: "AKTIF",
-    masa: "2028",
-    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+ARYA+WICAKSONO",
-    profile: "https://placehold.co/120x120/16181F/F97316?text=AW"
-  },
-  {
-    nrp: "22001",
-    nama: "Dian Pratiwi",
-    pangkat: "BRIGADIR",
-    divisi: "INTELIJEN",
-    status: "AKTIF",
-    masa: "2026",
-    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+DIAN+PRATIWI",
-    profile: "https://placehold.co/120x120/16181F/F97316?text=DP"
-  },
-  {
-    nrp: "33001",
-    nama: "Rizky Mahendra",
-    pangkat: "AIPDA",
-    divisi: "LANTAS",
-    status: "NON-AKTIF",
-    masa: "2025",
-    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+RIZKY+MAHENDRA",
     profile: "https://placehold.co/120x120/16181F/F97316?text=RM"
   },
   {
-    nrp: "44001",
-    nama: "Sinta Permata",
-    pangkat: "IPDA",
-    divisi: "PROPAM",
+    nrp: "2026034",
+    nama: "GoodCE11",
+    pangkat: "Brigadir Jenderal Polisi",
+    divisi: "Bareskrim",
     status: "AKTIF",
-    masa: "2029",
-    foto: "https://placehold.co/680x280/16181F/F97316?text=KTA+%E2%80%94+SINTA+PERMATA",
-    profile: "https://placehold.co/120x120/16181F/F97316?text=SP"
+    masa: "2027",
+    foto: "https://cdn.discordapp.com/attachments/1515017096856211526/1515531629865472262/Nama_Nrp_Phone_Address_20260614_082058_0000.png?ex=6a2f5851&is=6a2e06d1&hm=c7d85386322c68773a6fc892ea485705461be4bb0f33655f49e5b98a5de1b2c2",
+    profile: "https://placehold.co/120x120/16181F/F97316?text=RM"
   }
 ];
 
